@@ -1,0 +1,1 @@
+The file `onnx.proto` was taken from the [ONNX GitHub](https://github.com/onnx/onnx "ONNX GitHub") which is licensed under the **Apache License 2.0**. The file `LICENSE` is a copy of this License and refers only to the file `onnx.proto`.
