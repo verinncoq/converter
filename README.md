@@ -1,8 +1,5 @@
 # A verified converter for neural networks from ONNX to coq
 
-## What's new?
-
-In version 1.1 of the converter, **Coq.io** is used for the in- and output of Coq. However, this usage is still optional and must be activated manually. But it should provide a faster converter, as well as some bug fixes. Currently, it is only available in Linux.
 
 ## Requirements
 
@@ -15,3 +12,7 @@ In version 1.1 of the converter, **Coq.io** is used for the in- and output of Co
 ## Build
 
 To compile, run `compile.sh`. You can also manually compile all files with `coqc`.
+
+## Run
+
+After a successful compilement, you may run `./converter.native input_file output_file`, where `input_file` must be a decoded ONNX-file.
