@@ -16,3 +16,7 @@ To compile, run `compile.sh`. You can also manually compile all files with `coqc
 ## Run
 
 After a successful compilement, you may run `./converter.native input_file output_file`, where `input_file` must be a decoded ONNX-file.
+
+## Flowchart
+
+![](flowchart.png)
