@@ -15,8 +15,9 @@ To compile, run `compile.sh`. You can also manually compile all files with `coqc
 
 ## Run
 
-After a successful compilement, you may run `./converter.native input_file output_file`, where `input_file` must be a decoded ONNX-file.
+After a successful compilement, you may run `./converter.native input_file output_file`, where `input_file` must be a decoded ONNX-file. An ONNX file can be
+decoded using a script similar to `decode_cartpole.sh` in the folder `example_net`.
 
 ## Flowchart
 
-![](flowchart.png)
+![](assets/flowchart.png)

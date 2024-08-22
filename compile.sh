@@ -86,4 +86,4 @@ echo -n -e "\b\b\b\b5/6 "
 coqc -w none -R ./target/internal CoqE2EAI ./helpers/functions/transpose_mult_matrix.v -o ./target/internal/transpose_mult_matrix.vo
 echo -e "\b\b\b\b6/6 "
 
-echo "Done. You may now run ./converter.native <input_file> <output_file>."
+echo "Done. You may now try to convert an example network: ./converter.native example_net/cartpole_decoded_onnx cartpole.v"

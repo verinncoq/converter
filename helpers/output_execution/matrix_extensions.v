@@ -278,7 +278,7 @@ Proof.
     unfold null_vector.
     unfold mk_colvec.
     rewrite <- zero_is_0.
-    rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 (Nat.pred dim)) at 1.
+    rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 (Nat.pred dim)) at 1.
     apply sum_n_m_ext_loc.
     intros n Hn.
     destruct Hn.
@@ -598,7 +598,7 @@ Proof.
         rewrite coeff_mat_default; try lia.
         rewrite Rmult_0_l. rewrite Nat.add_0_l at 1.
         rewrite <- zero_is_0.
-        rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 (d2)).
+        rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 (d2)).
         apply sum_n_ext_loc.
         intros n Hn.
         unfold transpose.
@@ -657,7 +657,7 @@ Proof.
           reflexivity.
         * simpl.
           rewrite <- zero_is_0.
-          rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) (S d1) (d1 + S d2)) at 1.
+          rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) (S d1) (d1 + S d2)) at 1.
           apply sum_n_m_ext_loc.
           intros k Hk.
           unfold transpose.
@@ -713,7 +713,7 @@ Proof.
         rewrite coeff_mat_default; try lia.
         rewrite Rmult_0_l. rewrite Nat.add_0_r at 1.
         rewrite <- zero_is_0.
-        rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 (d1)).
+        rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 (d1)).
         apply sum_n_ext_loc.
         intros n Hn.
         unfold transpose.
@@ -735,7 +735,7 @@ Proof.
         apply f_equal2_plus_R.
         * simpl.
           rewrite <- zero_is_0.
-          rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 d1) at 1.
+          rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 d1) at 1.
           apply sum_n_m_ext_loc.
           intros k Hk.
           unfold transpose.
@@ -867,7 +867,7 @@ Proof.
         rewrite coeff_mat_bij; try lia.
         unfold sum_n.
         rewrite <- zero_is_0.
-        rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 (pred (n1 + n2))).
+        rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 (pred (n1 + n2))).
         destruct (le_gt_dec (n1 + n2) 0).
         - apply le_n_0_eq in l.
           repeat rewrite <- l at 1. simpl. 
@@ -937,7 +937,7 @@ Proof.
         unfold mk_colvec. unfold coeff_colvec.
         rewrite <- zero_is_0.
         rewrite <- (sum_n_m_const_zero 
-            (G:=R_AbelianGroup) (S (pred n1)) (pred (n1 + n2))).
+            (G:=R_AbelianMonoid) (S (pred n1)) (pred (n1 + n2))).
         apply sum_n_m_ext_loc.
         intros k Hk.
         rewrite coeff_mat_bij; try lia.
@@ -960,7 +960,7 @@ Proof.
             rewrite coeff_mat_bij; try lia.
             unfold sum_n.
             rewrite <- zero_is_0.
-            rewrite <- (sum_n_m_const_zero (G:=R_AbelianGroup) 0 (pred (n1 + n2))).
+            rewrite <- (sum_n_m_const_zero (G:=R_AbelianMonoid) 0 (pred (n1 + n2))).
             apply sum_n_m_ext_loc.
             intros n Hn.
             destruct (le_gt_dec (n1 + n2) 0).
@@ -1008,7 +1008,7 @@ Proof.
           apply f_equal2_plus_R.
           - rewrite <- zero_is_0.
             rewrite <- (sum_n_m_const_zero 
-              (G:=R_AbelianGroup) 0 (pred (S n1))).
+              (G:=R_AbelianMonoid) 0 (pred (S n1))).
             apply sum_n_m_ext_loc.
             intros k Hk.
             rewrite coeff_mat_bij; try lia.
