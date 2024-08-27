@@ -965,6 +965,15 @@ type 't error_option =
 | Success of 't
 | Error of char list
 
+(** val error_option_compose :
+    ('a1 -> 'a2 error_option) -> ('a2 -> 'a3 error_option) -> 'a1 -> 'a3
+    error_option **)
+
+let error_option_compose f g x =
+  match f x with
+  | Success fx -> g fx
+  | Error s0 -> Error s0
+
 (** val ascii_to_digit : char -> n option **)
 
 let ascii_to_digit ch =
@@ -3441,9 +3450,9 @@ let rec merge_quotationMark inMarkZone z0 = function
 let no_only_white s0 =
   negb (forallb isWhite0 s0)
 
-(** val tokenize : char list -> char list list **)
+(** val tokenizer : char list -> char list list **)
 
-let tokenize s0 =
+let tokenizer s0 =
   filter no_only_white
     (merge_quotationMark false []
       (split_strings isQuotationMark
@@ -3680,9 +3689,9 @@ let rec parse_recursive built_tree todo_list depth after_colon =
                           todo_list' depth false)
               a)
 
-(** val parse : char list list -> tree **)
+(** val parser0 : char list list -> tree **)
 
-let parse l =
+let parser0 l =
   parse_recursive (Subtree
     ((list_ascii_of_string ('m'::('a'::('i'::('n'::[]))))), [])) l O false
 
@@ -3961,18 +3970,18 @@ type iR_elem =
 | IR_node of char list * char list list * char list list * iR_operation
 | IR_initializer of char list * iR_fixedValue
 
-type nNSequential =
-| NNSequential_initializer_matrix of char list * nat * nat
+type nNPremodel =
+| NNPremodel_initializer_matrix of char list * nat * nat
    * (nat -> nat -> char list)
-| NNSequential_initializer_vector of char list * nat * (nat -> char list)
-| NNSequential_Output of char list * nat
-| NNSequential_Linear of char list * char list * char list * char list
+| NNPremodel_initializer_vector of char list * nat * (nat -> char list)
+| NNPremodel_Output of char list * nat
+| NNPremodel_Linear of char list * char list * char list * char list
    * char list * char list
-| NNSequential_ReLu of char list * char list
+| NNPremodel_ReLu of char list * char list
 
-(** val collect_nodes : tree -> tree fourtuple **)
+(** val node_collector : tree -> tree fourtuple **)
 
-let collect_nodes t3 =
+let node_collector t3 =
   ((((grabAll
        (map list_ascii_of_string
          (('g'::('r'::('a'::('p'::('h'::[]))))) :: []))
@@ -6805,9 +6814,9 @@ let convert_initializer t3 =
      Error
        ('E'::('r'::('r'::('o'::('r'::(':'::(' '::('a'::('n'::(' '::('i'::('n'::('i'::('t'::('i'::('a'::('l'::('i'::('z'::('e'::('r'::(' '::('n'::('o'::('d'::('e'::(' '::('d'::('o'::('e'::('s'::(' '::('n'::('o'::('t'::(' '::('d'::('e'::('f'::('i'::('n'::('e'::(' '::('a'::(' '::('n'::('a'::('m'::('e'::('.'::[])))))))))))))))))))))))))))))))))))))))))))))))))))
 
-(** val convert_to_IR : tree fourtuple -> iR_elem fourtuple error_option **)
+(** val iR_converter : tree fourtuple -> iR_elem fourtuple error_option **)
 
-let convert_to_IR t3 =
+let iR_converter t3 =
   let input_list_option = extract_error0 (map convert_input (get_input t3)) in
   (match input_list_option with
    | Success input_list ->
@@ -6872,10 +6881,10 @@ let iR_fixedValue_vector_to_function = function
    | Dim_vector _ -> Some (get_value_vector_list_optionZero value_list)
    | _ -> None)
 
-(** val iR_initializer__to__NNSequential_IR__initializers :
-    iR_elem -> nNSequential error_option **)
+(** val iR_initializer__to__NNPremodel_IR__initializers :
+    iR_elem -> nNPremodel error_option **)
 
-let iR_initializer__to__NNSequential_IR__initializers = function
+let iR_initializer__to__NNPremodel_IR__initializers = function
 | IR_initializer (s0, fv) ->
   let Value (dim, _) = fv in
   (match dim with
@@ -6888,7 +6897,7 @@ let iR_initializer__to__NNSequential_IR__initializers = function
    | Dim_vector n0 ->
      (match iR_fixedValue_vector_to_function fv with
       | Some function0 ->
-        Success (NNSequential_initializer_vector (s0, n0, function0))
+        Success (NNPremodel_initializer_vector (s0, n0, function0))
       | None ->
         Error
           (append
@@ -6898,7 +6907,7 @@ let iR_initializer__to__NNSequential_IR__initializers = function
    | Dim_matrix (n0, m) ->
      (match iR_fixedValue_matrix_to_function fv with
       | Some function0 ->
-        Success (NNSequential_initializer_matrix (s0, n0, m, function0))
+        Success (NNPremodel_initializer_matrix (s0, n0, m, function0))
       | None ->
         Error
           (append
@@ -6909,10 +6918,9 @@ let iR_initializer__to__NNSequential_IR__initializers = function
   Error
     ('E'::('r'::('r'::('o'::('r'::(':'::(' '::('f'::('o'::('u'::('n'::('d'::(' '::('s'::('o'::('m'::('e'::(' '::('n'::('o'::('n'::('-'::('i'::('n'::('i'::('t'::('i'::('a'::('l'::('i'::('z'::('e'::('r'::(' '::('v'::('a'::('l'::('u'::('e'::(' '::('i'::('n'::(' '::('i'::('n'::('i'::('t'::('i'::('a'::('l'::('i'::('z'::('e'::('r'::(' '::('l'::('i'::('s'::('t'::('.'::(' '::('T'::('h'::('i'::('s'::(' '::('m'::('i'::('g'::('h'::('t'::(' '::('b'::('e'::(' '::('a'::('n'::(' '::('i'::('m'::('p'::('l'::('e'::('m'::('e'::('n'::('t'::('a'::('t'::('i'::('o'::('n'::(' '::('e'::('r'::('r'::('o'::('r'::('.'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-(** val iR_node__to__NNSequential_IR :
-    iR_elem -> nNSequential error_option **)
+(** val iR_node__to__NNPremodel_IR : iR_elem -> nNPremodel error_option **)
 
-let iR_node__to__NNSequential_IR = function
+let iR_node__to__NNPremodel_IR = function
 | IR_node (_, li, lo, op) ->
   (match op with
    | Gemm (alpha, beta, transA, transB) ->
@@ -7015,7 +7023,7 @@ let iR_node__to__NNSequential_IR = function
                                                                     (match l2 with
                                                                     | [] ->
                                                                     Success
-                                                                    (NNSequential_Linear
+                                                                    (NNPremodel_Linear
                                                                     (input,
                                                                     output,
                                                                     weight,
@@ -7062,7 +7070,7 @@ let iR_node__to__NNSequential_IR = function
                 ('F'::('o'::('u'::('n'::('d'::(' '::('a'::(' '::('r'::('e'::('l'::('u'::(' '::('n'::('o'::('d'::('e'::(' '::('w'::('i'::('t'::('h'::(' '::('n'::('o'::('t'::(' '::('e'::('x'::('a'::('c'::('t'::('l'::('y'::(' '::('o'::('n'::('e'::(' '::('i'::('n'::('p'::('u'::('t'::(' '::('a'::('n'::('d'::(' '::('o'::('n'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
             | output :: l0 ->
               (match l0 with
-               | [] -> Success (NNSequential_ReLu (input, output))
+               | [] -> Success (NNPremodel_ReLu (input, output))
                | _ :: _ ->
                  Error
                    ('F'::('o'::('u'::('n'::('d'::(' '::('a'::(' '::('r'::('e'::('l'::('u'::(' '::('n'::('o'::('d'::('e'::(' '::('w'::('i'::('t'::('h'::(' '::('n'::('o'::('t'::(' '::('e'::('x'::('a'::('c'::('t'::('l'::('y'::(' '::('o'::('n'::('e'::(' '::('i'::('n'::('p'::('u'::('t'::(' '::('a'::('n'::('d'::(' '::('o'::('n'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
@@ -7073,16 +7081,15 @@ let iR_node__to__NNSequential_IR = function
   Error
     ('E'::('r'::('r'::('o'::('r'::(':'::(' '::('f'::('o'::('u'::('n'::('d'::(' '::('s'::('o'::('m'::('e'::(' '::('n'::('o'::('n'::('-'::('n'::('o'::('d'::('e'::(' '::('v'::('a'::('l'::('u'::('e'::(' '::('i'::('n'::(' '::('n'::('o'::('d'::('e'::(' '::('l'::('i'::('s'::('t'::('.'::(' '::('T'::('h'::('i'::('s'::(' '::('m'::('i'::('g'::('h'::('t'::(' '::('b'::('e'::(' '::('a'::('n'::(' '::('i'::('m'::('p'::('l'::('e'::('m'::('e'::('n'::('t'::('a'::('t'::('i'::('o'::('n'::(' '::('e'::('r'::('r'::('o'::('r'::('.'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-(** val iR_output__to__NNSequential_IR :
-    iR_elem -> nNSequential error_option **)
+(** val iR_output__to__NNPremodel_IR : iR_elem -> nNPremodel error_option **)
 
-let iR_output__to__NNSequential_IR = function
+let iR_output__to__NNPremodel_IR = function
 | IR_output (s0, dim) ->
   (match dim with
    | Dim_scalar ->
      Error
        ('T'::('h'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('d'::('i'::('m'::(' '::('c'::('a'::('n'::('t'::(' '::('b'::('e'::(' '::('a'::(' '::('s'::('c'::('a'::('l'::('a'::('r'::(' '::('i'::('n'::(' '::('t'::('h'::('i'::('s'::(' '::('m'::('o'::('d'::('e'::('l'::('.'::[]))))))))))))))))))))))))))))))))))))))))))))))
-   | Dim_vector n0 -> Success (NNSequential_Output (s0, n0))
+   | Dim_vector n0 -> Success (NNPremodel_Output (s0, n0))
    | Dim_matrix (n0, m) ->
      (match n0 with
       | O ->
@@ -7092,13 +7099,13 @@ let iR_output__to__NNSequential_IR = function
              ('T'::('h'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('d'::('i'::('m'::(' '::('c'::('a'::('n'::('t'::(' '::('b'::('e'::(' '::('a'::(' '::('m'::('a'::('t'::('r'::('i'::('x'::(' '::('i'::('n'::(' '::('t'::('h'::('i'::('s'::(' '::('m'::('o'::('d'::('e'::('l'::('.'::[]))))))))))))))))))))))))))))))))))))))))))))))
          | S n1 ->
            (match n1 with
-            | O -> Success (NNSequential_Output (s0, n0))
+            | O -> Success (NNPremodel_Output (s0, n0))
             | S _ ->
               Error
                 ('T'::('h'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('d'::('i'::('m'::(' '::('c'::('a'::('n'::('t'::(' '::('b'::('e'::(' '::('a'::(' '::('m'::('a'::('t'::('r'::('i'::('x'::(' '::('i'::('n'::(' '::('t'::('h'::('i'::('s'::(' '::('m'::('o'::('d'::('e'::('l'::('.'::[]))))))))))))))))))))))))))))))))))))))))))))))))
       | S n1 ->
         (match n1 with
-         | O -> Success (NNSequential_Output (s0, m))
+         | O -> Success (NNPremodel_Output (s0, m))
          | S _ ->
            (match m with
             | O ->
@@ -7106,7 +7113,7 @@ let iR_output__to__NNSequential_IR = function
                 ('T'::('h'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('d'::('i'::('m'::(' '::('c'::('a'::('n'::('t'::(' '::('b'::('e'::(' '::('a'::(' '::('m'::('a'::('t'::('r'::('i'::('x'::(' '::('i'::('n'::(' '::('t'::('h'::('i'::('s'::(' '::('m'::('o'::('d'::('e'::('l'::('.'::[]))))))))))))))))))))))))))))))))))))))))))))))
             | S n2 ->
               (match n2 with
-               | O -> Success (NNSequential_Output (s0, n0))
+               | O -> Success (NNPremodel_Output (s0, n0))
                | S _ ->
                  Error
                    ('T'::('h'::('e'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('d'::('i'::('m'::(' '::('c'::('a'::('n'::('t'::(' '::('b'::('e'::(' '::('a'::(' '::('m'::('a'::('t'::('r'::('i'::('x'::(' '::('i'::('n'::(' '::('t'::('h'::('i'::('s'::(' '::('m'::('o'::('d'::('e'::('l'::('.'::[])))))))))))))))))))))))))))))))))))))))))))))))))))
@@ -7114,22 +7121,21 @@ let iR_output__to__NNSequential_IR = function
   Error
     ('E'::('r'::('r'::('o'::('r'::(':'::(' '::('f'::('o'::('u'::('n'::('d'::(' '::('s'::('o'::('m'::('e'::(' '::('n'::('o'::('n'::('-'::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('v'::('a'::('l'::('u'::('e'::(' '::('i'::('n'::(' '::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('l'::('i'::('s'::('t'::('.'::(' '::('T'::('h'::('i'::('s'::(' '::('m'::('i'::('g'::('h'::('t'::(' '::('b'::('e'::(' '::('a'::('n'::(' '::('i'::('m'::('p'::('l'::('e'::('m'::('e'::('n'::('t'::('a'::('t'::('i'::('o'::('n'::(' '::('e'::('r'::('r'::('o'::('r'::('.'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-(** val convert_to_premodel :
-    iR_elem fourtuple -> nNSequential list error_option **)
+(** val premodel_converter :
+    iR_elem fourtuple -> nNPremodel list error_option **)
 
-let convert_to_premodel ft =
+let premodel_converter ft =
   let inits = get_initializer ft in
   let nodes = get_nodes ft in
   let outputs = get_output ft in
   let error_option_inits =
-    extract_error0
-      (map iR_initializer__to__NNSequential_IR__initializers inits)
+    extract_error0 (map iR_initializer__to__NNPremodel_IR__initializers inits)
   in
   let error_option_nodes =
-    extract_error0 (map iR_node__to__NNSequential_IR nodes)
+    extract_error0 (map iR_node__to__NNPremodel_IR nodes)
   in
   let error_option_outputs =
-    extract_error0 (map iR_output__to__NNSequential_IR outputs)
+    extract_error0 (map iR_output__to__NNPremodel_IR outputs)
   in
   (match error_option_inits with
    | Success just_success_inits ->
@@ -7397,10 +7403,10 @@ let makeName s0 =
       ('_'::('e'::('i'::('g'::('h'::('t'::('_'::[])))))))) '9'
     ('_'::('n'::('i'::('n'::('e'::('_'::[]))))))
 
-(** val stringifyNNSequential : nNSequential -> char list **)
+(** val stringifyNNPremodel : nNPremodel -> char list **)
 
-let stringifyNNSequential = function
-| NNSequential_initializer_matrix (name, n0, m, function0) ->
+let stringifyNNPremodel = function
+| NNPremodel_initializer_matrix (name, n0, m, function0) ->
   append
     ('D'::('e'::('f'::('i'::('n'::('i'::('t'::('i'::('o'::('n'::(' '::[])))))))))))
     (append (makeName name)
@@ -7412,7 +7418,7 @@ let stringifyNNSequential = function
               (append (' '::[])
                 (append (strigifyFunction_NatNatString function0 m n0)
                   ('.'::[]))))))))
-| NNSequential_initializer_vector (name, n0, function0) ->
+| NNPremodel_initializer_vector (name, n0, function0) ->
   append
     ('D'::('e'::('f'::('i'::('n'::('i'::('t'::('i'::('o'::('n'::(' '::[])))))))))))
     (append (makeName name)
@@ -7421,8 +7427,8 @@ let stringifyNNSequential = function
         (append (stringifyNat n0)
           (append (' '::[])
             (append (strigifyFunction_NatString function0 n0) ('.'::[]))))))
-| NNSequential_Output (_, _) -> []
-| NNSequential_Linear (name, next, weight, bias, transB, beta) ->
+| NNPremodel_Output (_, _) -> []
+| NNPremodel_Linear (name, next, weight, bias, transB, beta) ->
   let weight_prefix =
     match transB with
     | [] ->
@@ -7652,7 +7658,7 @@ let stringifyNNSequential = function
     match beta with
     | [] ->
       append
-        ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+        ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
         (append beta ('"'::(')'::(' '::[]))))
     | a::s0 ->
       (* If this appears, you're using Ascii internals. Please don't *)
@@ -7664,32 +7670,32 @@ let stringifyNNSequential = function
         if b
         then if b0
              then append
-                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                     (append beta ('"'::(')'::(' '::[]))))
              else if b1
                   then append
-                         ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                         ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                          (append beta ('"'::(')'::(' '::[]))))
                   else if b2
                        then append
-                              ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                              ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                               (append beta ('"'::(')'::(' '::[]))))
                        else if b3
                             then if b4
                                  then if b5
                                       then append
-                                             ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                             ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                              (append beta
                                                ('"'::(')'::(' '::[]))))
                                       else if b6
                                            then append
-                                                  ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                  ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                   (append beta
                                                     ('"'::(')'::(' '::[]))))
                                            else (match s0 with
                                                  | [] ->
                                                    append
-                                                     ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                     ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                      (append beta
                                                        ('"'::(')'::(' '::[]))))
                                                  | a0::s1 ->
@@ -7701,7 +7707,7 @@ let stringifyNNSequential = function
                                                      (fun b7 b8 b9 b10 b11 b12 b13 b14 ->
                                                      if b7
                                                      then append
-                                                            ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                            ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                             (append beta
                                                               ('"'::(')'::(' '::[]))))
                                                      else if b8
@@ -7711,7 +7717,7 @@ let stringifyNNSequential = function
                                                                     if b11
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7721,7 +7727,7 @@ let stringifyNNSequential = function
                                                                     if b13
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7729,7 +7735,7 @@ let stringifyNNSequential = function
                                                                     if b14
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7737,7 +7743,7 @@ let stringifyNNSequential = function
                                                                     (match s1 with
                                                                     | [] ->
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7751,7 +7757,7 @@ let stringifyNNSequential = function
                                                                     if b15
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7759,7 +7765,7 @@ let stringifyNNSequential = function
                                                                     if b16
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7767,7 +7773,7 @@ let stringifyNNSequential = function
                                                                     if b17
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7775,7 +7781,7 @@ let stringifyNNSequential = function
                                                                     if b18
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7787,7 +7793,7 @@ let stringifyNNSequential = function
                                                                     if b21
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7795,7 +7801,7 @@ let stringifyNNSequential = function
                                                                     if b22
                                                                     then 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
@@ -7804,53 +7810,53 @@ let stringifyNNSequential = function
                                                                     | [] -> []
                                                                     | _::_ ->
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[])))))
                                                                     else 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
                                                                     else 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[])))))
                                                                     a1)
                                                                     else 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
                                                                     else 
                                                                     append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
                                                                else append
-                                                                    ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                    ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                     (append
                                                                     beta
                                                                     ('"'::(')'::(' '::[]))))
                                                           else append
-                                                                 ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                                                 ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                                                  (append beta
                                                                    ('"'::(')'::(' '::[])))))
                                                      a0)
                                  else append
-                                        ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                        ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                         (append beta ('"'::(')'::(' '::[]))))
                             else append
-                                   ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+                                   ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                                    (append beta ('"'::(')'::(' '::[]))))
         else append
-               ('('::('c'::('o'::('n'::('s'::('t'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))
+               ('('::('s'::('c'::('a'::('l'::('a'::('r'::('_'::('m'::('u'::('l'::('t'::(' '::('('::('r'::('e'::('a'::('l'::('_'::('o'::('f'::('_'::('s'::('t'::('r'::('i'::('n'::('g'::(' '::('"'::[]))))))))))))))))))))))))))))))
                (append beta ('"'::(')'::(' '::[])))))
         a
   in
@@ -7978,7 +7984,7 @@ let stringifyNNSequential = function
                 (append bias_prefix
                   (append (makeName bias)
                     (append bias_suffix (append (makeName next) ('.'::[])))))))))))
-| NNSequential_ReLu (name, next) ->
+| NNPremodel_ReLu (name, next) ->
   append
     ('D'::('e'::('f'::('i'::('n'::('i'::('t'::('i'::('o'::('n'::(' '::[])))))))))))
     (append (makeName name)
@@ -7986,16 +7992,16 @@ let stringifyNNSequential = function
         (' '::(':'::('='::(' '::('N'::('N'::('R'::('e'::('L'::('U'::(' '::[])))))))))))
         (append (makeName next) ('.'::[]))))
 
-(** val isOutput : nNSequential -> bool **)
+(** val isOutput : nNPremodel -> bool **)
 
 let isOutput = function
-| NNSequential_Output (_, _) -> true
+| NNPremodel_Output (_, _) -> true
 | _ -> false
 
-(** val oneOutput : nNSequential -> char list * char list **)
+(** val oneOutput : nNPremodel -> char list * char list **)
 
 let oneOutput = function
-| NNSequential_Output (name, dim) ->
+| NNPremodel_Output (name, dim) ->
   ((makeName name),
     (append
       ('('::('N'::('N'::('O'::('u'::('t'::('p'::('u'::('t'::(' '::('('::('o'::('u'::('t'::('p'::('u'::('t'::('_'::('d'::('i'::('m'::(':'::('='::[])))))))))))))))))))))))
@@ -8004,7 +8010,7 @@ let oneOutput = function
   (('E'::('r'::('r'::('o'::('r'::(':'::(' '::('n'::('o'::('n'::('-'::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('n'::('o'::('d'::('e'::(' '::('f'::('o'::('u'::('n'::('d'::(' '::('i'::('n'::(' '::('o'::('n'::('l'::('y'::('-'::('o'::('u'::('t'::('p'::('u'::('t'::(' '::('l'::('i'::('s'::('t'::(','::(' '::('m'::('e'::('a'::('n'::('i'::('n'::('g'::(' '::('i'::('n'::('s'::('t'::('a'::('l'::('l'::('a'::('t'::('i'::('o'::('n'::(' '::('i'::('s'::(' '::('b'::('r'::('o'::('k'::('e'::('n'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))),
     [])
 
-(** val allOutputs : nNSequential list -> (char list * char list) list **)
+(** val allOutputs : nNPremodel list -> (char list * char list) list **)
 
 let allOutputs nodelist =
   map oneOutput (filter isOutput nodelist)
@@ -8018,32 +8024,28 @@ let rec addOutput outputs nnseq =
     let (var_name, definition) = p in
     addOutput t3 (replaceString nnseq var_name definition)
 
-(** val stringifyNNSequentialList : nNSequential list -> char list **)
+(** val premodel_stringifier : nNPremodel list -> char list **)
 
-let stringifyNNSequentialList l =
+let premodel_stringifier l =
   append
-    ('('::('*'::('t'::('h'::('i'::('s'::(' '::('f'::('i'::('l'::('e'::(' '::('w'::('a'::('s'::(' '::('g'::('e'::('n'::('e'::('r'::('a'::('t'::('e'::('d'::(' '::('a'::('u'::('t'::('o'::('m'::('a'::('t'::('i'::('c'::('a'::('l'::('l'::('y'::('*'::(')'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('S'::('t'::('r'::('i'::('n'::('g'::('s'::('.'::('S'::('t'::('r'::('i'::('n'::('g'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('S'::('t'::('r'::('i'::('n'::('g'::('s'::('.'::('A'::('s'::('c'::('i'::('i'::('.'::('\n'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('R'::('e'::('a'::('l'::('s'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('u'::('e'::('l'::('i'::('c'::('o'::('t'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('C'::('o'::('q'::('u'::('e'::('l'::('i'::('c'::('o'::('t'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('p'::('i'::('e'::('c'::('e'::('w'::('i'::('s'::('e'::('_'::('l'::('i'::('n'::('e'::('a'::('r'::(' '::('n'::('e'::('u'::('r'::('o'::('n'::('_'::('f'::('u'::('n'::('c'::('t'::('i'::('o'::('n'::('s'::(' '::('m'::('i'::('s'::('s'::('i'::('n'::('g'::('_'::('l'::('e'::('m'::('m'::('a'::('s'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('n'::('e'::('u'::('r'::('a'::('l'::('_'::('n'::('e'::('t'::('w'::('o'::('r'::('k'::('s'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('s'::('t'::('r'::('i'::('n'::('g'::('_'::('t'::('o'::('_'::('n'::('u'::('m'::('b'::('e'::('r'::('.'::('\n'::(' '::(' '::(' '::(' '::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('t'::('r'::('a'::('n'::('s'::('p'::('o'::('s'::('e'::('_'::('m'::('u'::('l'::('t'::('_'::('m'::('a'::('t'::('r'::('i'::('x'::('.'::('\n'::(' '::(' '::('\n'::(' '::(' '::('O'::('p'::('e'::('n'::(' '::('S'::('c'::('o'::('p'::('e'::(' '::('n'::('a'::('t'::('_'::('s'::('c'::('o'::('p'::('e'::('.'::('\n'::('\n'::[]))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+    ('('::('*'::('t'::('h'::('i'::('s'::(' '::('f'::('i'::('l'::('e'::(' '::('w'::('a'::('s'::(' '::('g'::('e'::('n'::('e'::('r'::('a'::('t'::('e'::('d'::(' '::('a'::('u'::('t'::('o'::('m'::('a'::('t'::('i'::('c'::('a'::('l'::('l'::('y'::('*'::(')'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('S'::('t'::('r'::('i'::('n'::('g'::('s'::('.'::('S'::('t'::('r'::('i'::('n'::('g'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('S'::('t'::('r'::('i'::('n'::('g'::('s'::('.'::('A'::('s'::('c'::('i'::('i'::('.'::('\n'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('R'::('e'::('a'::('l'::('s'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('u'::('e'::('l'::('i'::('c'::('o'::('t'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('C'::('o'::('q'::('u'::('e'::('l'::('i'::('c'::('o'::('t'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('m'::('a'::('t'::('r'::('i'::('x'::('_'::('e'::('x'::('t'::('e'::('n'::('s'::('i'::('o'::('n'::('s'::(' '::('p'::('i'::('e'::('c'::('e'::('w'::('i'::('s'::('e'::('_'::('a'::('f'::('f'::('i'::('n'::('e'::(' '::('n'::('e'::('u'::('r'::('o'::('n'::('_'::('f'::('u'::('n'::('c'::('t'::('i'::('o'::('n'::('s'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('n'::('e'::('u'::('r'::('a'::('l'::('_'::('n'::('e'::('t'::('w'::('o'::('r'::('k'::('s'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('s'::('t'::('r'::('i'::('n'::('g'::('_'::('t'::('o'::('_'::('n'::('u'::('m'::('b'::('e'::('r'::('.'::('\n'::('F'::('r'::('o'::('m'::(' '::('C'::('o'::('q'::('E'::('2'::('E'::('A'::('I'::(' '::('R'::('e'::('q'::('u'::('i'::('r'::('e'::(' '::('I'::('m'::('p'::('o'::('r'::('t'::(' '::('t'::('r'::('a'::('n'::('s'::('p'::('o'::('s'::('e'::('_'::('m'::('u'::('l'::('t'::('_'::('m'::('a'::('t'::('r'::('i'::('x'::('.'::('\n'::(' '::(' '::('\n'::('O'::('p'::('e'::('n'::(' '::('S'::('c'::('o'::('p'::('e'::(' '::('n'::('a'::('t'::('_'::('s'::('c'::('o'::('p'::('e'::('.'::('\n'::('\n'::[])))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
     (concat ('\n'::('\n'::[]))
-      (map (addOutput (allOutputs l)) (map stringifyNNSequential l)))
+      (map (addOutput (allOutputs l)) (map stringifyNNPremodel l)))
 
 (** val convert_ONNX_to_Coq : char list -> char list **)
 
 let convert_ONNX_to_Coq s0 =
-  match raw_data_converter (list_ascii_of_string s0) with
-  | Success raw_data_converted ->
-    let filtered = filter0 (parse (tokenize raw_data_converted)) in
-    (match filtered with
-     | Success t3 ->
-       let ir_err = convert_to_IR (collect_nodes t3) in
-       (match ir_err with
-        | Success ir ->
-          let pre = convert_to_premodel ir in
-          (match pre with
-           | Success nnseq -> stringifyNNSequentialList nnseq
-           | Error s1 -> s1)
-        | Error s1 -> s1)
-     | Error s1 -> s1)
-  | Error e -> e
+  let conversion =
+    error_option_compose
+      (error_option_compose
+        (error_option_compose (fun raw_onnx ->
+          raw_data_converter (list_ascii_of_string raw_onnx)) (fun onnx ->
+          filter0 (parser0 (tokenizer onnx)))) (fun token_tree ->
+        iR_converter (node_collector token_tree))) premodel_converter
+  in
+  (match conversion s0 with
+   | Success premodel -> premodel_stringifier premodel
+   | Error description -> description)
 
 (** val convert : char list -> char list **)
 

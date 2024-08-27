@@ -138,8 +138,8 @@ def funString_tofunR(string):
         out += s
     return out
 
-#formats NNSequential_IR__initializer_matrix__python type
-def format_NNSequential_IR__initializer_matrix__python(string):
+#formats NNPremodel_IR__initializer_matrix__python type
+def format_NNPremodel_IR__initializer_matrix__python(string):
     args = getCoqFunctionArguments(string)
     dim1 = args[3]
     dim2 = args[2]
@@ -147,23 +147,23 @@ def format_NNSequential_IR__initializer_matrix__python(string):
     var_name = makeName(string, 1)
     return "Definition " + var_name  + " := mk_matrix " + dim1 + " " + dim2 + " " + funString_tofunR(fun) + ".\n\n"
 
-#formats NNSequential_IR__initializer_vector__python type
-def format_NNSequential_IR__initializer_vector__python(string):
+#formats NNPremodel_IR__initializer_vector__python type
+def format_NNPremodel_IR__initializer_vector__python(string):
     args = getCoqFunctionArguments(string)
     dim = args[2]
     fun = args[3]
     var_name = makeName(string, 1)
     return "Definition " + var_name + " := mk_colvec " + dim + " " + funString_tofunR(fun) + ".\n\n"
 
-#formats NNSequential_IR__Output__python type
-def format_NNSequential_IR__Output__python(string):
+#formats NNPremodel_IR__Output__python type
+def format_NNPremodel_IR__Output__python(string):
     args = getCoqFunctionArguments(string)
     dim = args[2]
     var_name = makeName(string, 1)
     return (var_name, "(NNOutput (output_dim:=" + dim + "))")
 
-#formats NNSequential_IR__Linear__python type
-def format_NNSequential_IR__Linear__python(string):
+#formats NNPremodel_IR__Linear__python type
+def format_NNPremodel_IR__Linear__python(string):
     args = getCoqFunctionArguments(string)
     var_name = makeName(string, 1)
     in_name = makeName(string, 2)
@@ -175,7 +175,7 @@ def format_NNSequential_IR__Linear__python(string):
         bias_prefix = ""
         bias_suffix = " "
     else:
-        bias_prefix = "(constmult (real_of_string " + beta + ") "
+        bias_prefix = "(scalar_mult (real_of_string " + beta + ") "
         bias_suffix = ") "
     if(float(transB[1:-1]) == 0.0):
         weight_prefix = ""
@@ -186,30 +186,30 @@ def format_NNSequential_IR__Linear__python(string):
     return "Definition " + var_name + " := NNLinear " + weight_prefix + in_weight + weight_suffix + " " + bias_prefix + in_bias + bias_suffix + in_name + ".\n\n"
     
 
-#formats NNSequential_IR__ReLu__python type
-def format_NNSequential_IR__ReLu__python(string):
+#formats NNPremodel_IR__ReLu__python type
+def format_NNPremodel_IR__ReLu__python(string):
     var_name = makeName(string, 1)
     in_name = makeName(string, 2)
     return "Definition " + var_name + " := NNReLU " + in_name + ".\n\n"
 
 def formatString(string):
     fun_name = getCoqFunctionArguments(string)[0]
-    if(fun_name == "NNSequential_initializer_matrix"):
-        return format_NNSequential_IR__initializer_matrix__python(string)
-    if(fun_name == "NNSequential_initializer_vector"):
-        return format_NNSequential_IR__initializer_vector__python(string)
-    if(fun_name == "NNSequential_Output"):
-        return format_NNSequential_IR__Output__python(string)
-    if(fun_name == "NNSequential_Linear"):
-        return format_NNSequential_IR__Linear__python(string)
-    if(fun_name == "NNSequential_ReLu"):
-        return format_NNSequential_IR__ReLu__python(string)
+    if(fun_name == "NNPremodel_initializer_matrix"):
+        return format_NNPremodel_IR__initializer_matrix__python(string)
+    if(fun_name == "NNPremodel_initializer_vector"):
+        return format_NNPremodel_IR__initializer_vector__python(string)
+    if(fun_name == "NNPremodel_Output"):
+        return format_NNPremodel_IR__Output__python(string)
+    if(fun_name == "NNPremodel_Linear"):
+        return format_NNPremodel_IR__Linear__python(string)
+    if(fun_name == "NNPremodel_ReLu"):
+        return format_NNPremodel_IR__ReLu__python(string)
 
 def formatList(l):
     output_node_name = ("","")
     out = ""
     for s in l:
-        if(getCoqFunctionArguments(s)[0] == "NNSequential_Output"):
+        if(getCoqFunctionArguments(s)[0] == "NNPremodel_Output"):
             output_node_name = formatString(s)
         else:
             out += formatString(s)

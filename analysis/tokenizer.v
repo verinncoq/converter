@@ -15,7 +15,7 @@ Definition isWhite (c : ascii) : bool :=
       (orb (n =? 10) (* linefeed *)
            (n =? 13)). (* Carriage return. *)
 
-Definition isNotWhite (c: ascii): bool :=
+Definition isNotWhitespace (c: ascii): bool :=
   negb (isWhite c).
 
 (*Following code is inspired by https://softwarefoundations.cis.upenn.edu/lf-current/ImpParser.html*)
@@ -93,7 +93,7 @@ orb
 (*
 Tokenizer funktion. Takes a list ascii and returns a list of list ascii, containing the tokens
 *)
-Definition tokenize(s: list ascii): list (list ascii) :=
+Definition tokenizer (s: list ascii): list (list ascii) :=
   filter no_only_white (
     merge_quotationMark false [] (
       split_strings isQuotationMark (
@@ -164,35 +164,35 @@ concat s = concat (merge_quotationMark false [] s).
 Proof. intros s. rewrite <- not_more_not_less_merge_quotationMark_stronger. simpl. reflexivity. Qed.
 
 Lemma filter_no_white: forall (s: list ascii),
-no_only_white s = false -> filter isNotWhite s = [].
+no_only_white s = false -> filter isNotWhitespace s = [].
 Proof. intros s. induction s.
 - simpl. reflexivity.
-- destruct (isNotWhite a) eqn: W.
+- destruct (isNotWhitespace a) eqn: W.
   * intros H. unfold no_only_white in H. unfold forallb in H.
     rewrite negb_andb in H. apply orb_false_iff in H. destruct H. 
-    unfold isNotWhite in W. rewrite W in H. discriminate H.
-  * unfold filter. destruct (isNotWhite a) eqn: W2.
+    unfold isNotWhitespace in W. rewrite W in H. discriminate H.
+  * unfold filter. destruct (isNotWhitespace a) eqn: W2.
     + discriminate.
     + unfold no_only_white. simpl. rewrite negb_andb. rewrite orb_false_iff. 
       intros H. destruct H. apply IHs. unfold no_only_white. apply H0. Qed.
 
 Lemma double_filter_redundant: forall (s: list(list ascii)),
-filter isNotWhite (concat s) = filter isNotWhite (concat (filter no_only_white s)).
+filter isNotWhitespace (concat s) = filter isNotWhitespace (concat (filter no_only_white s)).
 Proof. intros s. induction s.
 - simpl. reflexivity.
 - simpl. destruct (no_only_white a) eqn:W.
   * simpl. rewrite filter_app. rewrite IHs. rewrite filter_app. reflexivity.
   * rewrite filter_app. apply filter_no_white in W. rewrite W. simpl. rewrite IHs. reflexivity. Qed.
 
-Theorem not_less_not_more: forall(s: list ascii),
-filter isNotWhite s = filter isNotWhite (concat (tokenize s)).
-Proof. intros s. unfold tokenize. rewrite <- double_filter_redundant.
+Theorem not_less_not_more: forall (s: list ascii),
+filter isNotWhitespace s = filter isNotWhitespace (concat (tokenizer s)).
+Proof. intros s. unfold tokenizer. rewrite <- double_filter_redundant.
 rewrite <- not_more_not_less_merge_quotationMark. rewrite <- not_more_not_less_split_strings.
 rewrite <- not_more_not_less_split_strings. rewrite <- not_more_not_less_split_strings.
 rewrite <- not_more_not_less_split_strings. rewrite <- not_more_not_less_split. reflexivity. Qed.
 
-Lemma not_white_in_tokenized: forall(a: ascii)(s: list ascii),
-isNotWhite a = true /\ In a s -> In a (concat (tokenize s)).
-Proof. intros. assert(Hf: In a (filter isNotWhite s)).
+Lemma not_white_in_tokenized: forall(a: ascii) (s: list ascii),
+isNotWhitespace a = true /\ In a s -> In a (concat (tokenizer s)).
+Proof. intros. assert(Hf: In a (filter isNotWhitespace s)).
 - apply filter_In. apply and_comm. apply H.
 - rewrite not_less_not_more in Hf. apply filter_In in Hf. destruct Hf. apply H0. Qed.

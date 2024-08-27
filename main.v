@@ -13,39 +13,39 @@ From CoqE2EAI Require Export raw_data_converter.
 From CoqE2EAI Require Export tokenizer.
 From CoqE2EAI Require Export parser.
 From CoqE2EAI Require Export filter.
-From CoqE2EAI Require Export collect_nodes.
-From CoqE2EAI Require Export convert_to_IR.
-From CoqE2EAI Require Export convert_to_premodel.
+From CoqE2EAI Require Export node_collector.
+From CoqE2EAI Require Export IR_converter.
+From CoqE2EAI Require Export premodel_converter.
 From CoqE2EAI Require Export list_ascii_helpers.
-From CoqE2EAI Require Export stringifyNNSequential.
+From CoqE2EAI Require Export premodel_stringifier.
 
-Theorem same_node_count: forall (s raw_data_converted: list ascii)(t: tree)(IR: fourtuple IR_elem)(p: list NNSequential),
-  raw_data_converter s = Success raw_data_converted ->
-  filter (parse (tokenize raw_data_converted)) = Success t ->
-  convert_to_IR (collect_nodes t) = Success IR ->
-  convert_to_premodel IR = Success p ->
-  count_nodes_without_input t = List.length p.
-Proof. intros.
-  apply same_node_count_convert_to_premodel in H2.
-  apply same_node_count_convert_to_IR in H1.
-  rewrite H2. rewrite H1. rewrite same_node_count_collect_nodes_without_input. reflexivity. Qed.
+Theorem same_node_count: 
+  forall (t t_filtered: tree) (IR: fourtuple IR_elem) (p: list NNPremodel),
+    filter t = Success t_filtered -> 
+    IR_converter (node_collector t_filtered) = Success IR ->
+    premodel_converter IR = Success p ->
+    count_nodes_without_input t = List.length p.
+Proof. 
+  intros t t_filtered IR p H0 H1 H2.
+  apply same_node_count_premodel_converter in H2.
+  apply same_node_count_IR_converter in H1.
+  apply no_error_implies_same_node_count_without_input in H0.
+  rewrite H2. rewrite H1. rewrite H0.
+  rewrite same_node_count_node_collector_without_input.
+  reflexivity. 
+Qed.
+
+Notation "f |> g" := (error_option_compose f g) (at level 85).  
 
 Definition convert_ONNX_to_Coq (s: string) : string :=
-  match raw_data_converter (list_ascii_of_string s) with
-  | Error e => e
-  | Success raw_data_converted => let filtered := filter (parse (tokenize raw_data_converted)) in
-             match filtered with
-             | Error s => s
-             | Success t => let ir_err := convert_to_IR (collect_nodes t) in
-                            match ir_err with
-                            | Error s => s
-                            | Success ir => let pre := convert_to_premodel ir in
-                                            match pre with
-                                            | Error s => s
-                                            | Success nnseq => stringifyNNSequentialList nnseq
-                                            end
-                            end
-             end
+  let conversion := 
+    ((fun raw_onnx => raw_data_converter (list_ascii_of_string raw_onnx)) |>
+    (fun onnx => filter (parser (tokenizer onnx))) |>
+    (fun token_tree => IR_converter (node_collector token_tree)) |>
+    (fun ir => premodel_converter ir)) in
+  match conversion s with
+  | Success premodel => premodel_stringifier premodel
+  | Error description => description
   end.
 
 (*convertion function applied to the file's content*)

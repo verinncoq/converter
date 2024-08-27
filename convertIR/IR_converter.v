@@ -306,7 +306,7 @@ Definition convert_initializer (t: tree) : error_option IR_elem :=
 (*
 convert to IR module function. converts all nodes in fourtuple into the IR, using helping functions defined above.
 *)
-Definition convert_to_IR (t: fourtuple tree) : error_option (fourtuple IR_elem) :=
+Definition IR_converter (t: fourtuple tree) : error_option (fourtuple IR_elem) :=
   let input_list_option := extract_error (map convert_input (get_input t)) in
   match input_list_option with
   | Error s => Error s
@@ -325,21 +325,21 @@ Definition convert_to_IR (t: fourtuple tree) : error_option (fourtuple IR_elem) 
                             end
   end.
 
-(*convert_to_IR PROOF*)
+(*IR_converter PROOF*)
 
-Lemma same_node_count_convert_to_IR_input: forall (ft: fourtuple tree),
+Lemma same_node_count_IR_converter_input: forall (ft: fourtuple tree),
   length (map convert_input (get_input ft)) = length (get_input ft).
 Proof. intros. rewrite map_length. reflexivity. Qed.
 
-Lemma same_node_count_convert_to_IR_output: forall (ft: fourtuple tree),
+Lemma same_node_count_IR_converter_output: forall (ft: fourtuple tree),
   length (map convert_output (get_output ft)) = length (get_output ft).
 Proof. intros. rewrite map_length. reflexivity. Qed.
 
-Lemma same_node_count_convert_to_IR_node: forall (ft: fourtuple tree),
+Lemma same_node_count_IR_converter_node: forall (ft: fourtuple tree),
   length (map convert_node (get_nodes ft)) = length (get_nodes ft).
 Proof. intros. rewrite map_length. reflexivity. Qed.
 
-Lemma same_node_count_convert_to_IR_initializer: forall (ft: fourtuple tree),
+Lemma same_node_count_IR_converter_initializer: forall (ft: fourtuple tree),
   length (map convert_initializer (get_initializer ft)) = length (get_initializer ft).
 Proof. intros. rewrite map_length. reflexivity. Qed.
 
@@ -350,18 +350,18 @@ Definition getValue_fourtupleIR_elem (eo : error_option (fourtuple IR_elem)): fo
   | Error _ => ft IR_elem ([],[],[],[])
   end.
 
-Theorem same_node_count_convert_to_IR: forall (ft: fourtuple tree)(tuple: fourtuple IR_elem),
-  convert_to_IR ft = Success tuple -> length (flatten_fourtuple_without_input tuple) = length (flatten_fourtuple_without_input ft).
-Proof. intros. unfold convert_to_IR in H. destruct (extract_error (map convert_input (get_input ft))) eqn:INPUT.
+Theorem same_node_count_IR_converter: forall (ft: fourtuple tree) (tuple: fourtuple IR_elem),
+  IR_converter ft = Success tuple -> length (flatten_fourtuple_without_input tuple) = length (flatten_fourtuple_without_input ft).
+Proof. intros. unfold IR_converter in H. destruct (extract_error (map convert_input (get_input ft))) eqn:INPUT.
       + destruct (extract_error (map convert_output (get_output ft))) eqn:OUTPUT.
         * destruct (extract_error (map convert_node (get_nodes ft))) eqn:NODE.
           -- destruct (extract_error (map convert_initializer (get_initializer ft))) eqn:INITIALIZER.
              ++ inversion H. unfold flatten_fourtuple_without_input. unfold get_output at 1.
                  unfold get_nodes  at 1. unfold get_initializer  at 1. unfold fst. unfold snd. apply len_add. split.
-                   ** rewrite <- same_node_count_convert_to_IR_output. apply extract_error_length in OUTPUT. apply OUTPUT.
+                   ** rewrite <- same_node_count_IR_converter_output. apply extract_error_length in OUTPUT. apply OUTPUT.
                    ** apply len_add. split.
-                      --- rewrite <- same_node_count_convert_to_IR_node. apply extract_error_length in NODE. apply NODE.
-                      --- rewrite <- same_node_count_convert_to_IR_initializer. apply extract_error_length in INITIALIZER. apply INITIALIZER.
+                      --- rewrite <- same_node_count_IR_converter_node. apply extract_error_length in NODE. apply NODE.
+                      --- rewrite <- same_node_count_IR_converter_initializer. apply extract_error_length in INITIALIZER. apply INITIALIZER.
              ++ inversion H.
           -- inversion H.
        * inversion H.

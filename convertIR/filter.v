@@ -75,10 +75,8 @@ Filter function. Takes a tree, with 'main' as a parent name for the root node.
 Definition filter (t: tree): error_option tree :=
   filter_recursive (list_ascii_of_string "main") t.
 
-
-
 (*PROOFS*)
-Lemma no_error_same_tree: forall(t ft: tree),
+Lemma no_error_same_tree: forall (t ft: tree),
 filter t = Success ft -> eq_string_tree t ft.
 Proof. intros. destruct t.
   - unfold filter in H. simpl in H. unfold convert_empty_error in H. simpl in H. inversion H. reflexivity.

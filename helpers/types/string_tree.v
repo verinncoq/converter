@@ -10,7 +10,7 @@ From CoqE2EAI Require Export eqb_la.
 (*type tree. used for the syntaxtree*)
 Inductive tree :=
   | leaf (value : list ascii)
-  | subtree (value: list ascii)(children : list tree).
+  | subtree (value: list ascii) (children : list tree).
 
 (*type used to declare errors*)
 Inductive StringErrorWarning :=
@@ -182,7 +182,7 @@ end.
 
 (*for Prooving
 returns true if some list ascii is a value in tree t*)
-Fixpoint InTree (s: list ascii)(t: tree): bool :=
+Fixpoint InTree (s: list ascii) (t: tree): bool :=
 match t with
 | leaf v => eqb (string_of_list_ascii v) (string_of_list_ascii s)
 | subtree v children => (eqb (string_of_list_ascii v) (string_of_list_ascii s)) || (existsb (InTree s) children)
@@ -229,14 +229,14 @@ Proof. intros. unfold not. rewrite eqb_neq in H. unfold not in H. intros.
 rewrite <- list_ascii_of_string_of_list_ascii in H0. rewrite H0 in H.
 rewrite list_ascii_of_string_of_list_ascii in H. apply H. reflexivity. Qed.
 
-Lemma InTree_eq: forall (s: list ascii)(t: tree)(d: nat), InTree s (append_at_end t d s) = true.
+Lemma InTree_eq: forall (s: list ascii) (t: tree) (d: nat), InTree s (append_at_end t d s) = true.
 Proof. intros. revert t. induction d.
 - simpl. intros. rewrite orb_true_iff. right. rewrite existsb_app. rewrite orb_true_iff.
   right. simpl. rewrite orb_true_iff. left. rewrite orb_true_iff. left. rewrite eqb_refl. reflexivity.
 - simpl. intros. rewrite orb_true_iff. right. rewrite existsb_app. rewrite orb_true_iff. right.
   simpl. rewrite orb_true_iff. left. apply IHd. Qed.
 
-Lemma InTree_cons: forall (s r: list ascii)(t: tree)(d: nat),
+Lemma InTree_cons: forall (s r: list ascii) (t: tree) (d: nat),
 InTree s t = true -> InTree s (append_at_end t d r) = true.
 Proof. intros. revert H. revert t. induction d.
 - simpl. intros. rewrite orb_true_iff. induction t.
@@ -264,7 +264,7 @@ Proof. intros. revert H. revert t. induction d.
                   ++++ apply H.
                   ++++ discriminate H. Qed.
 
-Lemma InTree_not_app: forall (s r: list ascii)(t: tree)(d: nat),
+Lemma InTree_not_app: forall (s r: list ascii) (t: tree) (d: nat),
 InTree s (append_at_end t d r) = true /\ eqb (string_of_list_ascii r) (string_of_list_ascii s) = false ->
 InTree s t = true \/ s = (list_ascii_of_string"probably_misplaced_node").
 Proof. intros. destruct H. revert H. revert t. induction d.

@@ -177,16 +177,16 @@ Definition makeName (s: string) :=
 
 
 Open Scope string_scope.
-(*converts every NNSequential node (except for output) into a string for file-output*)
-Definition stringifyNNSequential (nnseq: NNSequential) : string :=
+(*converts every NNPremodel node (except for output) into a string for file-output*)
+Definition stringifyNNPremodel (nnseq: NNPremodel) : string :=
   match nnseq with
-  | NNSequential_initializer_matrix name n m function => 
+  | NNPremodel_initializer_matrix name n m function => 
     "Definition " ++ (makeName name) ++ " := mk_matrix " ++ (stringifyNat m) ++ " " ++ (stringifyNat n) ++ " " ++ strigifyFunction_NatNatString function m n ++ "."
-  | NNSequential_initializer_vector name n function =>
+  | NNPremodel_initializer_vector name n function =>
     "Definition " ++ (makeName name) ++ " := mk_colvec " ++ (stringifyNat n) ++ " " ++ strigifyFunction_NatString function n ++ "."
-  | NNSequential_Output name dim =>
+  | NNPremodel_Output name dim =>
     ""
-  | NNSequential_Linear name next weight bias transB beta =>
+  | NNPremodel_Linear name next weight bias transB beta =>
     let weight_prefix := match transB with
                          | "0.0" => ""%string
                          | _ => "(transpose "%string
@@ -197,7 +197,7 @@ Definition stringifyNNSequential (nnseq: NNSequential) : string :=
                          end in
     let bias_prefix := match beta with
                          | "1.0" => ""%string
-                         | _ => "(constmult (real_of_string """ ++ beta ++ """) "
+                         | _ => "(scalar_mult (real_of_string """ ++ beta ++ """) "
                          end in
     let bias_suffix := match beta with
                          | "1.0" => " "%string
@@ -205,25 +205,25 @@ Definition stringifyNNSequential (nnseq: NNSequential) : string :=
                          end in
     "Definition " ++ (makeName name) ++ " := NNLinear " ++ weight_prefix ++ (makeName weight) ++ weight_suffix ++
     " " ++ bias_prefix ++ (makeName bias) ++ bias_suffix ++ (makeName next) ++ "."
-  | NNSequential_ReLu name next =>
+  | NNPremodel_ReLu name next =>
     "Definition " ++ (makeName name) ++ " := NNReLU " ++ (makeName next) ++ "."
   end.
 
-Definition isOutput (nnseq: NNSequential) : bool :=
+Definition isOutput (nnseq: NNPremodel) : bool :=
   match nnseq with
-  | NNSequential_Output _ _ => true
+  | NNPremodel_Output _ _ => true
   | _ => false
   end.
 
 (*returns an output nodes as pair with its name*)
-Definition oneOutput (node: NNSequential) : (string * string) :=
+Definition oneOutput (node: NNPremodel) : (string * string) :=
   match node with
-  | NNSequential_Output name dim => ((makeName name), "(NNOutput (output_dim:=" ++ (stringifyNat dim) ++ "))")
+  | NNPremodel_Output name dim => ((makeName name), "(NNOutput (output_dim:=" ++ (stringifyNat dim) ++ "))")
   | _ => ("Error: non-output node found in only-output list, meaning installation is broken", "")
   end.
 
 (*returns all output nodes as pairs with their names*)
-Definition allOutputs (nodelist: list NNSequential) : list (string * string) :=
+Definition allOutputs (nodelist: list NNPremodel) : list (string * string) :=
   map oneOutput (List.filter isOutput nodelist).
 
 (*the first occurrence of every output node in the list gets renamend*)
@@ -233,25 +233,25 @@ Fixpoint addOutput (outputs: list (string * string)) (nnseq: string) : string :=
   | (var_name, definition)::t => addOutput t (replaceString nnseq var_name definition)
   end.
 
-(*master function. list of NNSequential nodes gets converted into string for output*)
-Definition stringifyNNSequentialList (l: list NNSequential) : string :=
+(*master function. list of NNPremodel nodes gets converted into string for output*)
+Definition premodel_stringifier (l: list NNPremodel) : string :=
   "(*this file was generated automatically*)
-    From Coq Require Import Strings.String.
-    From Coq Require Import Strings.Ascii.
+From Coq Require Import Strings.String.
+From Coq Require Import Strings.Ascii.
 
-    From Coq Require Import Reals.
-    From Coquelicot Require Import Coquelicot.
-    From CoqE2EAI Require Import piecewise_linear neuron_functions missing_lemmas.
-    From CoqE2EAI Require Import neural_networks.
-    From CoqE2EAI Require Import string_to_number.
-    From CoqE2EAI Require Import transpose_mult_matrix.
+From Coq Require Import Reals.
+From Coquelicot Require Import Coquelicot.
+From CoqE2EAI Require Import matrix_extensions piecewise_affine neuron_functions.
+From CoqE2EAI Require Import neural_networks.
+From CoqE2EAI Require Import string_to_number.
+From CoqE2EAI Require Import transpose_mult_matrix.
   
-  Open Scope nat_scope.
+Open Scope nat_scope.
 
 " ++
     String.concat "
 
-" (map (addOutput (allOutputs l)) (map stringifyNNSequential l)).
+" (map (addOutput (allOutputs l)) (map stringifyNNPremodel l)).
 
 
 

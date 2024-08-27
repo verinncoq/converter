@@ -29,3 +29,10 @@ Definition getError {T: Type} (eo: error_option T) : option string :=
   | Success _ => None
   | Error s => Some s
   end.
+
+Definition error_option_compose {A B C: Type} (f: A -> error_option B) (g: B -> error_option C): A -> error_option C :=
+  fun (x: A) => 
+    match f x with
+    | Success fx => g fx
+    | Error s => Error s
+    end.

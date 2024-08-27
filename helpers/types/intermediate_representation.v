@@ -103,12 +103,12 @@ Definition toStringIR (ir: IR_elem) : string :=
 
 (*3*)
 (*for coq-simple-io and python export*)
-Inductive NNSequential :=
-| NNSequential_initializer_matrix: string -> nat -> nat -> (nat -> nat -> string) -> NNSequential
-| NNSequential_initializer_vector: string -> nat -> (nat -> string) -> NNSequential
-| NNSequential_Output: string -> nat -> NNSequential
-| NNSequential_Linear: string -> string -> string -> string -> string -> string -> NNSequential
-| NNSequential_ReLu: string -> string -> NNSequential.
+Inductive NNPremodel :=
+| NNPremodel_initializer_matrix: string -> nat -> nat -> (nat -> nat -> string) -> NNPremodel
+| NNPremodel_initializer_vector: string -> nat -> (nat -> string) -> NNPremodel
+| NNPremodel_Output: string -> nat -> NNPremodel
+| NNPremodel_Linear: string -> string -> string -> string -> string -> string -> NNPremodel
+| NNPremodel_ReLu: string -> string -> NNPremodel.
 
 
 (*4*)

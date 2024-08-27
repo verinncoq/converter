@@ -38,7 +38,7 @@ Fixpoint parse_recursive (built_tree: tree) (todo_list: list (list ascii)) (dept
 (*
 Parsing function. Takes a list of tokens and return a syntax tree
 *)
-Definition parse (l: list (list ascii)) : tree := parse_recursive (subtree (list_ascii_of_string "main") []) l 0 false.
+Definition parser (l: list (list ascii)) : tree := parse_recursive (subtree (list_ascii_of_string "main") []) l 0 false.
 
 (*for prooving*)
 Definition is_delimiter_string (s: list ascii): bool :=
@@ -63,7 +63,7 @@ unfinished proof. Says that when a tree gets cutted down to a list of list ascii
   that its the same as its input, when special characters get removed
 
 Theorem forest_cut_down: forall (l: list(list ascii)),
-  filter no_special_characters (cut_down_tree (parse l)) = filter no_special_characters (l).
+  filter no_special_characters (cut_down_tree (parser l)) = filter no_special_characters (l).
 *)
 
 
@@ -150,7 +150,7 @@ Lemma In_parse_recursive: forall (todo: list (list ascii)) (s: list ascii) (t: t
 Inb todo s = true /\ is_delimiter_string s = false -> InTree s (parse_recursive t todo depth after_colon) = true.
 Proof. induction todo.
 - intros. destruct H. simpl in H. discriminate.
-- intros. destruct H. unfold parse. destruct (string_of_list_ascii a =? string_of_list_ascii s) eqn:E0.
+- intros. destruct H. unfold parser. destruct (string_of_list_ascii a =? string_of_list_ascii s) eqn:E0.
   + apply sol_eq in E0. rewrite <- E0 in H0. destruct (eqb (string_of_list_ascii a) (string_of_list_ascii ["{"%char])) eqn:G1.
     * apply sol_eq in G1. rewrite G1 in H0. simpl in H0. simpl. discriminate.
     * destruct (eqb (string_of_list_ascii a) (string_of_list_ascii ["}"%char])) eqn:G2.
@@ -428,5 +428,5 @@ Proof. induction todo.
 Qed.
 
 Theorem In_parser: forall (s: list ascii) (t: list (list ascii)),
-Inb t s = true /\ is_delimiter_string s = false -> InTree s (parse t) = true.
-Proof. intros. unfold parse. apply In_parse_recursive. apply H. Qed. 
+Inb t s = true /\ is_delimiter_string s = false -> InTree s (parser t) = true.
+Proof. intros. unfold parser. apply In_parse_recursive. apply H. Qed. 
