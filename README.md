@@ -1,5 +1,10 @@
 # A verified converter for neural networks from ONNX to coq
 
+Code for the paper "A Formally Verified Neural Network Converter for the Interactive Theorem Prover Coq".
+
+For the formal verification of neural networks, a trained neural network is typically converted into a representation that a theorem prover can process. Since the verification results apply only to the converted network, the conversion is critical and must be trustworthy. This paper introduces the first formally verified neural network converter for a theorem prover, specifically the interactive theorem prover Coq. The verified converter contributes a reliable verification of neural networks within Coq by narrowing the gap between the execution and the verification environment of neural networks.
+
+Link: [https://link.springer.com/chapter/10.1007/978-3-031-98208-8_12](https://link.springer.com/chapter/10.1007/978-3-031-98208-8_12)
 
 ## Requirements
 
